@@ -1,0 +1,196 @@
+# Use this file on RCAC machines in conjunction with:
+
+#!/bin/bash
+#module purge
+#module load pending
+#module load hdf5/1.8.10_intel-13.0.1.117
+#module load python/2.7.3_intel-13.0.1.117
+#module load boost/1.49.0_intel-13.0.1.117
+#module load intel-impi/4.1.0.024
+#module load intel/13.0.1.117
+#module load cmake
+
+#/opt/intel/impi/4.1.0.024/intel64
+MPIHOME = $(MPI_HOME)
+
+INCMPI        = -I $(MPI_HOME)/include
+#/opt/intel/composer_xe_2013.1.117/mkl
+MKLHOME = $(MKL_HOME)
+
+F90HOME       = $(IFORT_HOME)
+
+#to what extent is this needed?
+#old carter
+#MY_LD_LIB_PATH = /opt/intel/impi/4.0.3.008/intel64/include:/opt/intel/composerxe-2011.0.084/compiler/include:$(MKLHOME)/lib/intel64
+
+MY_LD_LIB_PATH = $(MPI_HOME)/include:$(ICC_HOME)/compiler/include:$(MKLHOME)/lib/intel64
+
+# Compilers
+CC            = icc
+CXX           = icpc
+CXX_STATIC    = $(CXX)
+CPP	        = cpp
+#MPICC         = mpicc
+MPICC          =mpiicc
+#MPICXX        = mpiCC
+MPICXX        = mpiicpc
+GCC           = gcc
+F90           = ifort
+F77           = $(F90)
+#F77           = mpif77 -fc ifort
+#MPIF77	     = mpif77 -fc ifort
+MPIF77        =mpiifort
+#MPIF90        = mpif90 -fc ifort
+MPIF90         =mpiifort
+LOADER        = $(MPICXX)
+
+# Compiler flags
+O_LEVEL       = -O3
+CPPFLAGS      = $(O_LEVEL) -DMPICH_IGNORE_CXX_SEEK 
+CFLAGS        = $(O_LEVEL) -fPIC 
+CXXFLAGS      = $(O_LEVEL) -fPIC 
+LDFLAGS       =
+FCFLAGS       = $(O_LEVEL) -fPIC 
+GCCFLAGS      = $(O_LEVEL) $(PICFLAG)
+F90FLAGS      = -msse3 $(O_LEVEL) -fPIC
+F77_FLAGS     = $(F90FLAGS)
+F77FLAGS      = $(F90FLAGS)
+
+F90_LIBS      = -L$(F90HOME)/lib -lifcore -lifport -L$(F90HOME)/lib/lsvml.a
+
+BLAS          =
+LAPACK        = -Wl,-rpath,$(MKLHOME)/lib/intel64 -L$(MKLHOME)/lib/intel64 -Wl,--start-group -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -Wl,--end-group 
+
+MPI_LIBS      = -Wl,-rpath,$(MPIHOME)/lib -L$(MPIHOME)/lib -lmpich
+LINKS         = -lpthread -lgfortran
+#OPENMP	      = -openmp
+
+ARPACK_DIR    = $(PROJECT_TOP)/libs/ARPACK/
+ARPACK_LIBS   = -lparpack -larpack
+
+# BOOST_INCLUDE is defined by module load boost 
+LINKBOOSTTEST = $(LINK_BOOST) -lboost_unit_test_framework -Wl,-rpath,/apps/coates/gcc-4.4.0/lib64/ -L/apps/coates/gcc-4.4.0/lib64/ -lstdc++ -lgcc_s
+MPIEXECTEST   = mpiexec -n 8
+
+#VTK
+VTKINC_PATH = $(PROJECT_TOP)/libs/vtk/include/vtk-5.10
+VTKLIB_PATH = $(PROJECT_TOP)/libs/vtk/lib/vtk-5.10
+
+#VTKINC_PATH = $(VTK_HOME)/include/vtk-5.10/
+#VTKLIB_PATH = $(VTK_HOME)/lib/vtk-5.10/
+
+
+INCVTK       = -I $(VTKINC_PATH) 
+VTK_INCLUDE = $(INCVTK)
+VTK_LIB = -L $(VTKLIB_PATH)
+
+VTK_LIBS     = -Wl,--start-group -Wl,-rpath,$(VTKLIB_PATH) -L$(VTKLIB_PATH) -lvtkFiltering -lvtkIO -lvtkCommon -lvtksys -lvtkDICOMParser  -lvtkpng -lvtkjpeg -lvtktiff -lvtkexpat -lvtkzlib -lvtkGraphics -lvtkImaging -lvtkNetCDF -lvtkNetCDF_cxx -lLSDyna -lvtkmetaio -lvtksqlite -lvtkhdf5_hl -lvtkverdict -lvtkhdf5_hl -lvtkhdf5 -Wl,--end-group
+
+#/apps/rhel6/hdf5/1.8.10_intel-13.0.1.117
+# this is set by module load
+HDF5_DIR = $(HDF5_HOME)
+HDF5_INCDIR   = $(HDF5_DIR)/include
+HDF5_LIBDIR   = $(HDF5_DIR)/lib
+HDF5_LIBS     = -Wl,-rpath,$(HDF5_LIBDIR) -L$(HDF5_LIBDIR) -lhdf5
+
+INCHDF = -I $(HDF5_INCDIR)
+#HDF5_LIBS     = -Wl,-rpath,$(HDF5_LIBDIR) -L$(HDF5_LIBDIR) -lhdf5
+
+#SZ_LIBDIR     = $(HDF5_DIR)/lib
+#SILO_INC      = -I $(PROJECT_TOP)/libs/silo/include
+#SILO_LIBS     = -Wl,--start-group -Wl,-rpath,$(PROJECT_TOP)/libs/silo/lib -L$(PROJECT_TOP)/libs/silo/lib -lsiloh5 -Wl,-rpath,$(HDF5_LIBDIR) -L$(HDF5_LIBDIR) -lhdf5 -lsz -Wl,--end-group
+
+#SILO_LIBS     = -Wl,--start-group -Wl,-rpath,$(PROJECT_TOP)/libs/silo/lib -L$(PROJECT_TOP)/libs/silo/lib -lsiloh5 -Wl,-rpath,$(HDF5_LIBDIR) -L$(HDF5_LIBDIR) -lhdf5  -Wl,--end-group
+
+SILO_INC  = -I $(PROJECT_TOP)/libs/silo/include
+SILO_LIBS = -Wl,-rpath,$(PROJECT_TOP)/libs/silo/lib -L$(PROJECT_TOP)/libs/silo/lib -lsiloh5  -Wl,-rpath,$(HDF5_DIR)/lib -L$(HDF5_DIR)/lib -lhdf5
+
+CPPFLAGS      += -DSILO
+
+LIBMESH_DIR        = $(PROJECT_TOP)/libs/libmesh/libmesh
+LIBMESH_ARCH       = x86_64-unknown-linux-gnu_opt
+LIBMESH_TECIO_ARCH = x86_64-unknown-linux-gnu
+LIBMESH_CONTRIBS   = -lexodusii -lgmv -lgzstream -lnetcdf -lsfcurves -ltriangle -llaspack -lHilbert
+libmesh_CPPFLAGS = -fPIC
+libmesh_CXXFLAGS = -DMPICH_IGNORE_CXX_SEEK
+LIBMESH_VERSION = 0.8.0
+
+libmesh_INCLUDE = -I$(HDF5_INCDIR)
+
+#libmesh_INCLUDE = -I /apps/rhel6/graphics/x86_64/intel/12.0.084/hdf5-1.8.7/include
+
+PETSC_DIR = $(PROJECT_TOP)/libs/petsc
+SLEPC_DIR = $(PROJECT_TOP)/libs/slepc
+# PETSC_DIR and SLEPC_DIR were set by module load ...
+PETSC_REAL_ARCH = linux
+PETSC_CPLX_ARCH = linux-complex
+SLEPC_REAL_ARCH = linux
+SLEPC_CPLX_ARCH = linux-complex
+#PETSC_REAL_DIR = $(PETSC_DIR)/$(PETSC_REAL_ARCH)
+#PETSC_CPLX_DIR = $(PETSC_DIR)/$(PETSC_CPLX_ARCH)
+#SLEPC_REAL_DIR = $(SLEPC_DIR)/$(SLEPC_REAL_ARCH)
+#SLEPC_CPLX_DIR = $(SLEPC_DIR)/$(SLEPC_CPLX_ARCH)
+
+# PETSC_DIR and SLEPC_DIR were set by module load ...
+PETSC_REAL_ARCH = linux
+PETSC_CPLX_ARCH = linux-complex
+SLEPC_REAL_ARCH = linux
+SLEPC_CPLX_ARCH = linux-complex
+
+#to be used with version 3.1-p7
+#PETSC_LIBS            = -lpetscts -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsnes -lpetscsys
+
+#will be used for the version 3.1-p8
+#PETSC_LIBS            = -lpetsc -lhdf5
+#PETSC_LIBS            = -lpetsc -lhdf5 -lpetscsnes -lpetscts -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys
+PETSC_LIBS            = -lpetscsnes -lpetscts -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys
+
+PETSC_EXT_LIBS_CPLX   = -lsuperlu_dist -lzmumps -ldmumps -lmumps_common -lscalapack -lblacs -lpord -lparmetis -lmetis
+PETSC_EXT_LIBS_REAL   = -lsuperlu_dist -lzmumps -ldmumps -lmumps_common -lscalapack -lblacs -lpord -lparmetis -lmetis
+#PETSC_BLAS_LAPACK_DIR = --with-blas-lapack-dir=/opt/intel/Compiler/11.1/059/mkl/lib/em64t
+#PETSC_REAL_DIR = $(PETSC_DIR)/$(PETSC_REAL_ARCH)
+#PETSC_CPLX_DIR = $(PETSC_DIR)/$(PETSC_CPLX_ARCH)
+#SLEPC_REAL_DIR = $(SLEPC_DIR)/$(SLEPC_REAL_ARCH)
+#SLEPC_CPLX_DIR = $(SLEPC_DIR)/$(SLEPC_CPLX_ARCH)
+#PETSC_REAL_BUILD = $(PROJECT_TOP)/libs/petsc
+#PETSC_CPLX_BUILD = $(PROJECT_TOP)/libs/petsc
+#SLEPC_REAL_BUILD = $(PROJECT_TOP)/libs/slepc
+#SLEPC_CPLX_BUILD = $(PROJECT_TOP)/libs/slepc
+PETSC_REAL_BUILD = $(PROJECT_TOP)/libs/petsc/build-real
+PETSC_CPLX_BUILD = $(PROJECT_TOP)/libs/petsc/build-cplx
+SLEPC_REAL_BUILD = $(PROJECT_TOP)/libs/slepc/build-real
+SLEPC_CPLX_BUILD = $(PROJECT_TOP)/libs/slepc/build-cplx
+PETSC_REAL_INC = -I $(PETSC_REAL_BUILD)/include -I $(PETSC_REAL_BUILD)/$(PETSC_REAL_ARCH)/include
+PETSC_CPLX_INC = -I $(PETSC_CPLX_BUILD)/include -I $(PETSC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/include
+SLEPC_REAL_INC = -I $(SLEPC_REAL_BUILD)/include -I $(SLEPC_REAL_BUILD)/$(PETSC_REAL_ARCH)/include
+SLEPC_CPLX_INC = -I $(SLEPC_CPLX_BUILD)/include -I $(SLEPC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/include
+PETSC_REAL_LIBDIR = $(PETSC_REAL_BUILD)/$(PETSC_REAL_ARCH)/lib
+PETSC_CPLX_LIBDIR = $(PETSC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/lib
+SLEPC_REAL_LIBDIR = $(SLEPC_REAL_BUILD)/$(PETSC_REAL_ARCH)/lib
+SLEPC_CPLX_LIBDIR = $(SLEPC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/lib
+
+
+
+#PETSC_REAL_BUILD = $(PETSC_DIR)
+#PETSC_CPLX_BUILD = $(PETSC_DIR)
+#SLEPC_REAL_BUILD = $(SLEPC_DIR)
+#SLEPC_CPLX_BUILD = $(SLEPC_DIR)
+#PETSC_REAL_INC = -I $(PETSC_DIR)/include -I $(PETSC_REAL_BUILD)/$(PETSC_REAL_ARCH)/include
+#PETSC_CPLX_INC = -I $(PETSC_DIR)/include -I $(PETSC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/include
+#SLEPC_REAL_INC = -I $(SLEPC_DIR)/include -I $(SLEPC_REAL_BUILD)/$(PETSC_REAL_ARCH)/include
+#SLEPC_CPLX_INC = -I $(SLEPC_DIR)/include -I $(SLEPC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/include
+#PETSC_REAL_LIBDIR = $(PETSC_REAL_BUILD)/$(PETSC_REAL_ARCH)/lib
+#PETSC_CPLX_LIBDIR = $(PETSC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/lib
+#SLEPC_REAL_LIBDIR = $(SLEPC_REAL_BUILD)/$(PETSC_REAL_ARCH)/lib
+#SLEPC_CPLX_LIBDIR = $(SLEPC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/lib
+
+
+#PYTHON SECTION
+PYTHON_ENABLE   = false
+PYTHON          =
+#set by module load
+#PYTHONHOME=/apps/rhel6/python/2.7.3_intel-13.0.1.117
+PYTHON_INCLUDE   = -I$(PYTHONHOME)/include/python2.7
+PYTHON_LIB     = -L$(PYTHONHOME)/lib/ -lpython2.7 
+#PYTHON_LIB     = -L$(PYTHONHOME)/lib/python2.7 -lpython2.7 
+#PYTHON_LIB     = -Wl,-rpath,$(PYTHONHOME)/lib/python2.7  -L$(PYTHONHOME)/lib/python2.7 -lpython2.7 -lssl -lcrypto -lutil

@@ -1,0 +1,155 @@
+# must load {visit,fftw}, and module swap PrgEnv-pgi PrgEnv-gnu; also set XTPE_INFO_MESSAGE_OFF=1
+
+MPICH_DIR     = /bgsys/drivers/ppcfloor/comm
+MPIHOME       = $(MPICH_DIR)
+INCMPI        = -I $(MPIHOME)/include/
+
+# Compilers
+CC            = mpicc
+CXX           = mpicxx
+CXX_STATIC    = mpicxx # bgxlC 
+CPP           = mpicxx # /bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-g++ # bgxlC 
+MPICC         = mpicc #-dynamic
+MPICXX        = mpicxx #-dynamic
+GCC           = mpicc #/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-gcc #-dynamic  # gcc # for AMD library or so..
+F90           = mpif90 # /bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-gfortran # bgxlf90 #-dynamic
+MPIF90        = mpif90 #-dynamic
+F77           = mpif77 # /bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-gfortran #bgf77 #-dynamic
+MPIF77        = mpif77 #-dynamic
+LOADER        = $(MPICXX)
+
+# Compiler flags
+#O_LEVEL       = -O2 -fastsse -tp=barcelona-64 -pc=64
+#O_LEVEL       = -O3
+O_LEVEL        = -O3
+CPPFLAGS      = $(O_LEVEL) -DMPICH_IGNORE_CXX_SEEK -DNO_MKL 
+CFLAGS        = $(O_LEVEL)
+# -Wall -fPIC
+CXXFLAGS      = $(O_LEVEL)
+LDFLAGS       =
+FCFLAGS       = $(O_LEVEL) 
+GCCFLAGS      = $(O_LEVEL) $(PICFLAG)
+F77FLAGS      = $(O_LEVEL)
+F90_LIBS      = -lgfortran
+
+MPI_LIBS      = 
+BLAS          = -L/gpfs/DDNgpfs1/walkup/lib -lscalapack -lblacs -lblacsF77init  -lblacsCinit -lblacs -llapack -lesslbg -lblas
+LAPACK        = -L/soft/lib -lscalapack -lblacs -lblacsF77init  -lblacsCinit -lblacs -llapack -lesslbg
+LINKS         = -L/soft/lib -lscalapack -lblacs -lblacsF77init  -lblacsCinit -lblacs -llapack -lesslbg -L/gpfs/DDNgpfs1/walkup/lib -lscalapack -lblacs -lblacsF77init  -lblacsCinit -lblacs -llapack -lesslbg -lblas 
+
+OPENMP	      = -fopenmp
+LIBSCI        = 
+
+ARPACK_DIR    = $(PROJECT_TOP)/libs/ARPACK/
+ARPACK_LIBS   = -lparpack -larpack
+
+#BOOST_INCLUDE = -I $(PROJECT_TOP)/libs/boost/boost_1_43_0 
+#LINK_BOOST    = -Wl,-rpath,$(PROJECT_TOP)/libs/boost/boost_1_43_0/stage/lib -L$(PROJECT_TOP)/libs/boost/boost_1_43_0/stage/lib
+#LINKBOOSTTEST = $(LINK_BOOST) -lboost_unit_test_framework
+#MPIEXECTEST   = 
+
+BOOST_INCLUDE = -I/soft/libs/boost/IBM/include
+LINK_BOOST    = -Wl,-rpath,/soft/libs/boost/IBM/lib -L/soft/libs/boost/IBM/lib
+LINKBOOSTTEST = $(LINK_BOOST) -lboost_unit_test_framework
+MPIEXECTEST   =
+
+
+VTKINC_PATH = $(PROJECT_TOP)/libs/vtk/include/vtk-5.6
+VTKLIB_PATH = $(PROJECT_TOP)/libs/vtk/lib/vtk-5.6
+INCVTK       = -I $(VTKINC_PATH)
+VTK_LIBS     = -L $(VTKLIB_PATH) -lvtkFiltering -lvtkIO -lvtkCommon -lvtksys -lvtkDICOMParser -lvtkNetCDF -lvtkmetaio -lvtksqlite -lvtkpng -lvtkjpeg -lvtktiff -lvtkexpat -lvtkzlib -lvtkGraphics -lvtkImaging
+
+
+SILO_INC  = -I $(PROJECT_TOP)/libs/silo/include
+SILO_LIBS = -Wl,-rpath,$(PROJECT_TOP)/libs/silo/lib -L$(PROJECT_TOP)/libs/silo/lib -lsiloh5  -Wl,-rpath,$(HDF5_DIR)/lib -L$(HDF5_DIR)/lib -lhdf5
+
+HDF5_DIR      = /soft/libs/hdf5/XL/ 
+# $(PROJECT_TOP)/libs/silo/hdf5-1.8.5-patch1
+HDF5_INCDIR   = $(HDF5_DIR)/include/
+HDF5_LIBDIR   = $(HDF5_DIR)/lib
+SZ_LIBDIR     = $(HDF5_DIR)/lib
+
+# check out silo's config.log for which hdf5 and sz to use
+
+#PETSCDEV=-dev
+PETSCDEV=
+#PETSCDEV=-p8
+
+LIBMESH_DIR        = $(PROJECT_TOP)/libs/libmesh$(PETSCDEV)/libmesh
+LIBMESH_ARCH       = x86_64-unknown-linux-gnu_opt
+LIBMESH_TECIO_ARCH = x86_64-unknown-linux-gnu
+LIBMESH_CONTRIBS   = -lexodusii -lgmv -lgzstream -lnetcdf -lsfcurves -ltriangle -llaspack -lHilbert
+LIBMESH_VERSION = 0.7.2
+
+# PETSc / SLEPc
+PETSC_REAL_ARCH = arch-linux2-cxx-opt
+PETSC_CPLX_ARCH = arch-linux2-cxx-opt
+SLEPC_REAL_ARCH = arch-linux2-cxx-opt
+#linux
+SLEPC_CPLX_ARCH = arch-linux2-cxx-opt
+#linux-complex
+ifeq ($(PETSCDEV),)
+	PETSC_LIBS            = -lpetscts -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsnes -lpetscsys
+	PETSC_EXT_LIBS_CPLX   = -lsuperlu_dist_2.5 -lzmumps -ldmumps -lmumps_common -lscalapack -lblacs -lpord -lparmetis -lmetis
+	PETSC_EXT_LIBS_REAL   = -lsuperlu_dist_2.5 -lzmumps -ldmumps -lmumps_common -lscalapack -lblacs -lpord -lparmetis -lmetis
+else
+ifeq ($(PETSCDEV),-p8)
+	PETSC_LIBS            = -lpetscts -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsnes -lpetscsys
+	PETSC_EXT_LIBS_CPLX   = -lsuperlu_dist_2.4 -lzmumps -ldmumps -lmumps_common -lscalapack -lblacs -lpord -lparmetis -lmetis
+	PETSC_EXT_LIBS_REAL   = -lsuperlu_dist_2.4 -lzmumps -ldmumps -lmumps_common -lscalapack -lblacs -lpord -lparmetis -lmetis
+else
+	PETSC_LIBS            = -lpetsc
+	PETSC_EXT_LIBS_CPLX   = -lzmumps -ldmumps -lmumps_common -lscalapack -lblacs -lpord -lparmetis -lmetis
+	PETSC_EXT_LIBS_REAL   = -lzmumps -ldmumps -lmumps_common -lscalapack -lblacs -lpord -lparmetis -lmetis
+endif
+endif
+PETSC_BLAS_LAPACK_DIR = --with-mpiexec=mpirun
+PETSC_REAL_BUILD = $(PROJECT_TOP)/libs/petsc$(PETSCDEV)/build-real
+SLEPC_REAL_BUILD = $(PROJECT_TOP)/libs/slepc$(PETSCDEV)/build-real
+PETSC_REAL_INC = -I $(PETSC_REAL_BUILD)/include -I $(PETSC_REAL_BUILD)/$(PETSC_REAL_ARCH)/include
+SLEPC_REAL_INC = -I $(SLEPC_REAL_BUILD)/include -I $(SLEPC_REAL_BUILD)/$(PETSC_REAL_ARCH)/include
+PETSC_REAL_LIBDIR = $(PETSC_REAL_BUILD)/$(PETSC_REAL_ARCH)/lib
+SLEPC_REAL_LIBDIR = $(SLEPC_REAL_BUILD)/$(PETSC_REAL_ARCH)/lib
+PETSC_CPLX_BUILD = $(PROJECT_TOP)/libs/petsc$(PETSCDEV)/build-cplx
+SLEPC_CPLX_BUILD = $(PROJECT_TOP)/libs/slepc$(PETSCDEV)/build-cplx
+PETSC_CPLX_INC = -I $(PETSC_CPLX_BUILD)/include -I $(PETSC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/include
+SLEPC_CPLX_INC = -I $(SLEPC_CPLX_BUILD)/include -I $(SLEPC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/include
+PETSC_CPLX_LIBDIR = $(PETSC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/lib
+SLEPC_CPLX_LIBDIR = $(SLEPC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/lib
+#PETSC_CPLX_BUILD  = $(PETSC_REAL_BUILD)
+#SLEPC_CPLX_BUILD  = $(SLEPC_REAL_BUILD)
+#PETSC_CPLX_INC    = $(PETSC_REAL_INC)
+#SLEPC_CPLX_INC    = $(SLEPC_REAL_INC)
+#PETSC_CPLX_LIBDIR = $(PETSC_REAL_LIBDIR)
+#SLEPC_CPLX_LIBDIR = $(SLEPC_REAL_LIBDIR)
+#CPPFLAGS += -DNOCOMPLEX
+
+# PAPI - a library to monitor flops etc.
+PAPI_PATH  = /opt/xt-tools/papi/default/v23/xt-cnl
+PAPI_INC   = -I $(PAPI_PATH)/include 
+PAPI_LIB   = $(PROJECT_TOP)/libs/krp/krp-init.o $(PROJECT_TOP)/libs/krp/krp-rpt.o $(PROJECT_TOP)/libs/krp/krp-rpt-init.o -L$(PAPI_PATH)/lib64 -lpapi
+
+CPPFLAGS  += -DSILO 
+
+#if want to use PAPI uncomment the following line
+#CPPFLAGS  +=  -DUSE_PAPI 
+
+# exclude libmesh and slepc for debugging purposes
+##CPPFLAGS += -DNOSLEPC -DNOLIBMESH
+##SLEPC_REAL_BUILD = 
+##SLEPC_REAL_INC = 
+##SLEPC_REAL_LIBDIR = 
+##SLEPC_CPLX_BUILD = 
+##SLEPC_CPLX_INC = 
+##SLEPC_CPLX_LIBDIR = 
+##LIBMESH_DIR        = 
+##LIBMESH_ARCH       = 
+##LIBMESH_TECIO_ARCH = 
+##LIBMESH_CONTRIBS   = 
+
+#PYTHON SECTION
+PYTHON_ENABLE   = true
+PYTHON         = /bgsys/drivers/V1R4M1_460_2009-091110P/ppc/gnu-linux/include/python2.6 
+#$(PROJECT_TOP)/libs/python/build
+PYTHON_INCLUDE = -I$(PYTHON)/Include -I$(PYTHON)
+PYTHON_LIB     = -L$(PYTHON)/lib -lpython2.6 -lutil

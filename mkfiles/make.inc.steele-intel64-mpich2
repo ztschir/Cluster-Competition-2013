@@ -1,0 +1,96 @@
+MPIHOME       = $(MPI_HOME)
+INCMPI        = -I $(MPIHOME)/include
+MKLHOME       = /opt/intel/mkl/10.2.0.013/lib/em64t/
+F90HOME       = $(IFORT_HOME)
+MY_LD_LIB_PATH = /apps/rhel5/mpich2-1.2.1p1/64/nemesis-intel-11.1.072/lib:/opt/intel/Compiler/11.1/072/lib/intel64:/opt/intel/mkl/10.2.5.035/lib/em64t
+
+# Compilers
+CC            = icc
+CXX           = icpc
+CPP	        = cpp
+MPICC         = mpicc
+MPICXX        = mpiCC
+GCC           = gcc
+F90           = ifort
+F77           = $(F90)
+MPIF77	     = mpif77
+MPIF90        = mpif90
+LOADER        = $(MPICXX)
+
+# Compiler flags
+O_LEVEL       = -O3
+CPPFLAGS      = $(O_LEVEL) -DMPICH_IGNORE_CXX_SEEK 
+CFLAGS        = $(O_LEVEL) -fPIC
+CXXFLAGS      = $(O_LEVEL) -fPIC
+LDFLAGS       =
+FCFLAGS       = $(O_LEVEL) -fPIC
+GCCFLAGS      = $(O_LEVEL) $(PICFLAG)
+F90FLAGS      = -msse3 $(O_LEVEL) -fPIC
+F77_FLAGS     = $(F90FLAGS)
+F77FLAGS      = $(F90FLAGS)
+
+F90_LIBS      = -L$(F90HOME)/lib -lifcore -lifport -L$(F90HOME)/lib/lsvml.a
+
+BLAS          =
+#LAPACK        = -L$(MKLHOME)  -Wl,-rpath,$(MKLHOME) -Wl,--start-group   -lmkl_intel_lp64 -lmkl_sequential -lmkl_core  -Wl,--end-group 
+# <ss 09/20/2010> arpack test crashes when using the above configuration
+LAPACK        = -Wl,-rpath,/apps/rhel5/intel/mkl/10.2.2.025/lib/em64t/ -L/apps/rhel5/intel/mkl/10.2.2.025/lib/em64t/ -lmkl_gf_lp64 -lmkl_sequential -lmkl_core -lifcore
+
+MPI_LIBS      = -Wl,-rpath,$(MPIHOME)/lib -L$(MPIHOME)/lib -lmpich
+LINKS         = -lpthread
+OPENMP	      = -openmp
+
+ARPACK_DIR    = $(PROJECT_TOP)/libs/ARPACK/
+ARPACK_LIBS   = -lparpack -larpack
+
+# BOOST_INCLUDE is defined by module load boost 
+LINKBOOSTTEST = $(LINK_BOOST) -lboost_unit_test_framework -Wl,-rpath,/apps/coates/gcc-4.4.0/lib64/ -L/apps/coates/gcc-4.4.0/lib64/ -lstdc++ -lgcc_s
+MPIEXECTEST   = mpiexec -n 8
+
+INCVTK       = -I /apps/rhel5/visit-2.0.0/2.0.0/linux-x86_64/include/vtk/include/vtk-5.0/ 
+VTK_LIBS     = -Wl,-rpath,/apps/rhel5/visit-2.0.0/2.0.0/linux-x86_64/lib/ -L/apps/rhel5/visit-2.0.0/2.0.0/linux-x86_64/lib/ -lvtkFiltering -lvtkIO -lvtkCommon -lvtksys -lvtkDICOMParser -lvtkMPEG2Encode -lvtkpng -lvtkjpeg -lvtktiff -lvtkexpat -lvtkzlib -lvtkGraphics -lvtkImaging
+
+# On coates/steele/rossmann HDF5 is already present in VisIt (also SZ)
+HDF5_DIR      = /apps/rhel5/visit-2.0.0/2.0.0/linux-x86_64
+HDF5_INCDIR   = $(HDF5_DIR)/include/hdf5/include
+HDF5_LIBDIR   = $(HDF5_DIR)/lib
+SZ_LIBDIR     = $(HDF5_DIR)/lib
+SILO_INC      = -I $(PROJECT_TOP)/libs/silo/include
+SILO_LIBS     = -Wl,-rpath,$(PROJECT_TOP)/libs/silo/lib -L$(PROJECT_TOP)/libs/silo/lib -lsiloh5 -Wl,-rpath,$(HDF5_LIBDIR) -L$(HDF5_LIBDIR) -lhdf5 -lsz
+CPPFLAGS      += -DSILO
+
+#LIBMESH_DIR        = $(PROJECT_TOP)/libs/libmesh-0.6.4/libmesh
+LIBMESH_DIR        = $(PROJECT_TOP)/libs/libmesh/libmesh
+LIBMESH_ARCH       = x86_64-unknown-linux-gnu_opt
+LIBMESH_TECIO_ARCH = x86_64-unknown-linux-gnu
+LIBMESH_CONTRIBS   = -lexodusii -lgmv -lgzstream -lnetcdf -lsfcurves -ltriangle -llaspack #-lHilbert
+LIBMESH_VERSION = 0.7.2
+
+# PETSC_DIR and SLEPC_DIR were set by module load ...
+PETSC_REAL_ARCH = linux
+PETSC_CPLX_ARCH = linux-complex
+SLEPC_REAL_ARCH = linux
+SLEPC_CPLX_ARCH = linux-complex
+PETSC_LIBS            = -lpetscts -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsnes -lpetscsys
+#PETSC_EXT_LIBS_CPLX   = -lparmetis -lmetis
+#PETSC_EXT_LIBS_REAL   = -lparmetis -lmetis
+PETSC_EXT_LIBS_CPLX   = -lsuperlu_dist -lzmumps -ldmumps -lmumps_common -lscalapack -lblacs -lpord -lparmetis -lmetis
+PETSC_EXT_LIBS_REAL   = -lsuperlu_dist -lHYPRE -lzmumps -ldmumps -lmumps_common -lscalapack -lblacs -lpord -lparmetis -lmetis
+PETSC_BLAS_LAPACK_DIR = --with-blas-lapack-dir=/opt/intel/Compiler/11.1/059/mkl/lib/em64t
+#PETSC_REAL_DIR = $(PETSC_DIR)/$(PETSC_REAL_ARCH)
+#PETSC_CPLX_DIR = $(PETSC_DIR)/$(PETSC_CPLX_ARCH)
+#SLEPC_REAL_DIR = $(SLEPC_DIR)/$(SLEPC_REAL_ARCH)
+#SLEPC_CPLX_DIR = $(SLEPC_DIR)/$(SLEPC_CPLX_ARCH)
+PETSC_REAL_BUILD = $(PETSC_DIR)
+PETSC_CPLX_BUILD = $(PETSC_DIR)
+SLEPC_REAL_BUILD = $(SLEPC_DIR)
+SLEPC_CPLX_BUILD = $(SLEPC_DIR)
+PETSC_REAL_INC = -I $(PETSC_DIR)/include -I $(PETSC_REAL_BUILD)/$(PETSC_REAL_ARCH)/include
+PETSC_CPLX_INC = -I $(PETSC_DIR)/include -I $(PETSC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/include
+SLEPC_REAL_INC = -I $(SLEPC_DIR)/include -I $(SLEPC_REAL_BUILD)/$(PETSC_REAL_ARCH)/include
+SLEPC_CPLX_INC = -I $(SLEPC_DIR)/include -I $(SLEPC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/include
+PETSC_REAL_LIBDIR = $(PETSC_REAL_BUILD)/$(PETSC_REAL_ARCH)/lib
+PETSC_CPLX_LIBDIR = $(PETSC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/lib
+SLEPC_REAL_LIBDIR = $(SLEPC_REAL_BUILD)/$(PETSC_REAL_ARCH)/lib
+SLEPC_CPLX_LIBDIR = $(SLEPC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/lib
+

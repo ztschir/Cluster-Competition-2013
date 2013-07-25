@@ -1,0 +1,118 @@
+# for Ubuntu/Kubuntu make sure you do NOT install the packages qhull, petsc, slepc, tetgen!!!
+# packages needed: libmpich2-dev, g++, gfortran, gcc, libboost1.40-dev, libboost-iostreams1.40-dev, 
+# libboost-test1.40-dev libboost-filesystems1.40-dev, liblapack-dev, m4, xutils-dev,libhdf5-serial-dev
+# cd NEMO/; ./configure.sh sebuntu; cd libs/; make; make; cd ../prototype; make;
+
+MPIHOME       = /usr/local/include/
+INCMPI        = -I $(MPIHOME)
+F90HOME       = $(GCC_HOME)/include/c++/4.4.1/
+MY_LD_LIB_PATH = /usr/lib:/lib
+
+# Compilers
+CC            = gcc
+CXX           = g++
+CXX_STATIC    = $(CXX)
+CPP	          = cpp
+MPICC         = mpicc
+MPICXX        = mpicxx -cxx=g++ # default is c++, not g++...
+GCC           = gcc
+F90           = gfortran
+F77           = $(F90)
+MPIF77	      = mpif77
+MPIF90        = mpif90
+LOADER        = $(MPICXX)
+
+# Compiler flags
+#O_LEVEL       = -O2
+O_LEVEL       = -O0
+CPPFLAGS      = $(O_LEVEL) -DMPICH_IGNORE_CXX_SEEK -DNO_MKL #-DPETSC_GLOBAL_SYMBOLS
+CFLAGS        = $(O_LEVEL) -fPIC
+CXXFLAGS      = $(O_LEVEL) -fPIC
+LDFLAGS       = -ltirpc
+FCFLAGS       = $(O_LEVEL) -fPIC
+GCCFLAGS      = $(O_LEVEL) $(PICFLAG)
+F77FLAGS      = $(O_LEVEL) -fPIC
+
+MPI_LIBS      = 
+OPENMP	      = -fopenmp
+F90_LIBS      = -lgfortran
+BLAS          = 
+LAPACK        =  -Wl,--start-group  -L/usr/lib/atlas -lblas -llapack -Wl,--end-group
+LINKS         = -lz -lgfortran -lX11 -lxcb -lXext -lXdmcp -lXau -ldl -pthread
+# RCAC versions of scalapack and blacs only static - use MKL instead	
+
+ARPACK_DIR    = $(PROJECT_TOP)/libs/ARPACK/
+ARPACK_LIBS   = -lparpack -larpack
+
+BOOST_INCLUDE = -I /usr/include
+#-I $(PROJECT_TOP)/libs/boost/boost_1_43_0  
+#LINK_BOOST    = -Wl,-rpath,$(PROJECT_TOP)/libs/boost/boost_1_43_0/stage/lib -L$(PROJECT_TOP)/libs/boost/boost_1_43_0/stage/lib
+LINKBOOSTTEST = -lboost_unit_test_framework
+#$(LINK_BOOST) -lboost_unit_test_framework
+MPIEXECTEST   = 
+
+# we need local build of VTK because the package does not contain static libraries
+
+INCVTK       = -I /usr/include/vtk-5.8
+VTK_LIBS     = -Wl,--start-group  -L /usr/lib -lvtkCommon -lvtkRendering -lvtkFiltering -lvtkftgl -lvtkverdict -lvtkIO -lvtksys -lvtkGraphics -lvtkImaging -lvtkHybrid -lvtkCharts -lvtkInfovis -Wl,--end-group
+
+
+#VTK_LIBS     = -L $(VTKLIB_PATH)  -lvtkIO -lvtkCommon -lvtksys -lvtkGraphics -lvtkImaging
+#VTK_LIBS     = -L $(VTKLIB_PATH) -lvtkFiltering -lvtkIO -lvtkCommon -lvtksys -lvtkDICOMParser -lvtkNetCDF -lvtkmetaio -lvtksqlite -lvtkpng -lvtkjpeg -lvtktiff -lvtkexpat -lvtkzlib -lvtkGraphics -lvtkImaging
+
+#HDF5_DIR      = $(PROJECT_TOP)/libs/silo/hdf5-1.8.5-patch1
+#HDF5_INCDIR   = $(HDF5_DIR)/hdf5/include
+#HDF5_LIBDIR   = $(HDF5_DIR)/hdf5/lib
+
+HDF5_DIR      = /usr/lib
+HDF5_INCDIR   = /usr/include
+HDF5_LIBDIR   = /usr/lib
+
+SZ_LIBDIR     = no
+SILO_INC      = -I $(PROJECT_TOP)/libs/silo/include
+SILO_LIBS     = -Wl,-rpath,$(PROJECT_TOP)/libs/silo/lib -L$(PROJECT_TOP)/libs/silo/lib -lsiloh5 -Wl,-rpath,$(HDF5_LIBDIR) -L$(HDF5_LIBDIR) -lhdf5 
+CPPFLAGS      += -DSILO
+
+LIBMESH_DIR = $(PROJECT_TOP)/libs/libmesh/libmesh
+LIBMESH_ARCH = i686-pc-linux-gnu_opt
+LIBMESH_TECIO_ARCH = i686-pc-linux-gnu
+LIBMESH_CONTRIBS   = -lexodusii -lgmv -lgzstream -lnetcdf -lsfcurves -ltriangle -llaspack -lHilbert
+
+
+
+# PETSc/SLEPc configuration:
+# PETSC_X_BUILD, PETSC_ARCH_X --> libs/petsc/Makefile, libs/slepc/Makefile, libs/libmesh/Makefile
+# SLEPC_X_BUILD --> libs/slepc/Makefile
+# PETSC_X_INC, SLEPC_X_INC --> prototype/Make.common
+# PETSC_X_LIBDIR, SLEPC_X_LIBDIR --> ./make.inc, src/math/libnemo_petsc_X/Makefile
+PETSC_REAL_ARCH = linux
+PETSC_CPLX_ARCH = linux-complex
+SLEPC_REAL_ARCH = linux
+SLEPC_CPLX_ARCH = linux-complex
+PETSC_LIBS            = -lpetscsnes -lpetscts -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys
+#PETSC_LIBS            = -lpetsc
+PETSC_EXT_LIBS_REAL   = -lsuperlu_dist_2.5 -lzmumps -ldmumps -lmumps_common -lscalapack -lblacs -lpord -lparmetis -lmetis
+PETSC_EXT_LIBS_CPLX   = -lsuperlu_dist_2.5 -lzmumps -ldmumps -lmumps_common -lscalapack -lblacs -lpord -lparmetis -lmetis
+PETSC_BLAS_LAPACK_DIR =
+PETSC_REAL_BUILD = $(PROJECT_TOP)/libs/petsc/build-real
+PETSC_CPLX_BUILD = $(PROJECT_TOP)/libs/petsc/build-cplx
+SLEPC_REAL_BUILD = $(PROJECT_TOP)/libs/slepc/build-real
+SLEPC_CPLX_BUILD = $(PROJECT_TOP)/libs/slepc/build-cplx
+PETSC_REAL_INC = -I $(PETSC_REAL_BUILD)/include -I $(PETSC_REAL_BUILD)/$(PETSC_REAL_ARCH)/include
+PETSC_CPLX_INC = -I $(PETSC_CPLX_BUILD)/include -I $(PETSC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/include
+SLEPC_REAL_INC = -I $(SLEPC_REAL_BUILD)/include -I $(SLEPC_REAL_BUILD)/$(PETSC_REAL_ARCH)/include
+SLEPC_CPLX_INC = -I $(SLEPC_CPLX_BUILD)/include -I $(SLEPC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/include
+PETSC_REAL_LIBDIR = $(PETSC_REAL_BUILD)/$(PETSC_REAL_ARCH)/lib
+PETSC_CPLX_LIBDIR = $(PETSC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/lib
+SLEPC_REAL_LIBDIR = $(SLEPC_REAL_BUILD)/$(PETSC_REAL_ARCH)/lib
+SLEPC_CPLX_LIBDIR = $(SLEPC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/lib
+
+#PYTHON SECTION
+PYTHON_ENABLE   = true
+PYTHON          =
+PYTHON_INCLUDE  = -I/usr/include/python2.7/
+PYTHON_LIB      = -L/usr/lib/python2.7/ -lpython2.7 -lssl -lcrypto -lutil
+
+
+#use static petsc libraries
+STATIC_PETSC_LIBS = true

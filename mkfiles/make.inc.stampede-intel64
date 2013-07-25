@@ -1,0 +1,133 @@
+# for Stampede (TACC) load intel/13.0.2.146, mvapich2/1.9a2 and modules cmake, slepc, petsc, boost, hdf5, mkl
+
+MPIHOME       = $(MPICH_HOME)
+INCMPI        = -I $(MPIHOME)/include
+MKLHOME       = $(MKLROOT)
+MKL_HOME      = $(MKLHOME)
+F90HOME       = $(IFC_DIR)
+MY_LD_LIB_PATH = 
+
+# Compilers
+CC            = icc
+CXX           = icpc
+CPP	      = cpp
+MPICC         = mpicc
+MPICXX        = mpicxx
+GCC           = gcc
+F90           = ifort
+F77           = $(F90)
+MPIF77	      = mpif77
+MPIF90        = mpif90
+LOADER        = $(MPICXX)
+
+# Compiler flags
+O_LEVEL       = -O3 -xAVX
+# MKL is there, but NO_MKL flag is used for compilation (will be OK at link time)
+#CPPFLAGS     = $(O_LEVEL) -DMPICH_IGNORE_CXX_SEEK -DHAVE_MPI_CPP -DNO_MKL
+CPPFLAGS      = $(O_LEVEL) -DMPICH_IGNORE_CXX_SEEK -DNO_MKL
+CFLAGS        = $(O_LEVEL) -fPIC
+CXXFLAGS      = $(O_LEVEL) -fPIC
+LDFLAGS       =
+FCFLAGS       = $(O_LEVEL) -fPIC
+GCCFLAGS      = $(O_LEVEL) -fPIC
+F90FLAGS      = $(O_LEVEL) -fPIC
+F77_FLAGS     = $(F90FLAGS)
+F77FLAGS      = $(F90FLAGS)
+libmesh_CXXFLAGS = -DMPICH_SKIP_MPICXX
+
+F90_LIBS      = -L$(F90HOME)/lib -lifcore -lifport -L$(F90HOME)/lib/lsvml.a
+
+
+#PETSC_DIR       = $(TACC_PETSC_DIR)
+PETSC_DIR	= /work/02423/zst75/CARLOS_TEST/libs/petsc/petsc-3.2-p6
+SLEPC_DIR       = $(TACC_SLEPC_DIR)
+
+MPI_LIBS      =  
+BLAS          =
+LAPACK        = -Wl,-rpath,$(MKLHOME)/lib/intel64/ -L$(MKLHOME)/lib/intel64/ -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lifcore
+
+LINKS         = -lpthread
+OPENMP	      = -openmp
+
+ARPACK_DIR    = $(PROJECT_TOP)/libs/ARPACK/
+ARPACK_LIBS   = -lparpack -larpack
+
+# BOOST_INCLUDE is defined by module load boost 
+##BOOST_INCLUDE = -I $(TACC_BOOST_INC)
+##LINK_BOOST    = -Wl,-rpath,$(TACC_BOOST_LIB) -L$(TACC_BOOST_LIB)
+##LINKBOOSTTEST = -L$(TACC_BOOST_LIB) -lboost_unit_test_framework -Wl,-rpath,/opt/apps/gcc/4.7.1/lib64/ -L/opt/apps/gcc/4.7.1/lib64/ -lstdc++ -lgcc_s
+
+BOOST_INCLUDE = -I $(PROJECT_TOP)/libs/boost/boost_1_43_0/
+LINK_BOOST    = -Wl,-rpath,$(PROJECT_TOP)/libs/boost/boost_1_43_0/libs/ -L$(PROJECT_TOP)/libs/boost/boost_1_43_0/libs/
+LINKBOOSTTEST = -L$(PROJECT_TOP)/libs/boost_1_43_0/boost/libs/ -lboost_unit_test_framework -Wl,-rpath,/opt/apps/gcc/4.7.1/lib64/ -L/opt/apps/gcc/4.7.1/lib64/ -lstdc++ -lgcc_s
+
+PYTHON_ENABLE  = true
+PYTHON_INCLUDE = -I$(TACC_PYTHON_DIR)/include/python2.7/
+PYTHON_LIB     = -Wl,-rpath,$(TACC_PYTHON_LIB)  -L$(TACC_PYTHON_LIB) -lpython2.7
+
+MPIEXECTEST   = ibrun -np 8
+
+VTKINC_PATH = $(PROJECT_TOP)/libs/vtk/include/vtk-5.10/
+VTKLIB_PATH = $(PROJECT_TOP)/libs/vtk/lib/vtk-5.10/
+
+INCVTK       = -I $(VTKINC_PATH)
+VTK_LIBS     = -Wl,-rpath,$(VTKLIB_PATH) -L$(VTKLIB_PATH) -lvtkFiltering -lvtkIO -lvtkCommon -lvtksys -lvtkDICOMParser -lvtkMPEG2Encode -lvtkNetCDF -lvtkmetaio -lvtksqlite -lvtkpng -lvtkjpeg -lvtktiff -lvtkexpat -lvtkzlib -lvtkGraphics -lvtkImaging
+
+HDF5_DIR      = $(TACC_HDF5_DIR)
+HDF5_INCDIR   = -I $(TACC_HDF5_INC)
+HDF5_LIBDIR   = $(TACC_HDF5_LIB)
+INCHDF	      = $(HDF5_INCDIR)
+SZ_LIBDIR     = no
+SILO_INC      = -I $(PROJECT_TOP)/libs/silo/include/
+SILO_LIBS     = -Wl,-rpath,$(PROJECT_TOP)/libs/silo/lib -L$(PROJECT_TOP)/libs/silo/lib -lsiloh5 -Wl,-rpath,$(HDF5_LIBDIR) -L$(HDF5_LIBDIR) -lhdf5
+CPPFLAGS      += -DSILO
+
+LIBMESH_DIR        = $(PROJECT_TOP)/libs/libmesh/libmesh
+LIBMESH_ARCH       = x86_64-unknown-linux-gnu_opt
+LIBMESH_TECIO_ARCH = x86_64-unknown-linux-gnu
+LIBMESH_CONTRIBS   = -lexodusii -lgmv -lgzstream -lnetcdf -lsfcurves -ltriangle -llaspack #-lHilbert
+LIBMESH_VERSION = 0.9.0
+
+PETSC_REAL_ARCH = sandybridge-cxx
+SLEPC_REAL_ARCH = sandybridge-cxx
+PETSC_CPLX_ARCH = sandybridge-cxxcomplex
+SLEPC_CPLX_ARCH = sandybridge-cxxcomplex
+##PETSC_LIBS            = -lpetscts -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsnes -lpetscsys
+PETSC_LIBS            = -lpetsc
+PETSC_EXT_LIBS_CPLX   = -lsuperlu_dist_2.4 -lsuperlu_4.0 -lzmumps -ldmumps -lmumps_common -lscalapack -lspooles -lspai -lblacs -lpord -lparmetis -lmetis
+PETSC_EXT_LIBS_REAL   = -lsuperlu_dist_2.4 -lsuperlu_4.0 -lHYPRE -lzmumps -ldmumps -lmumps_common -lscalapack -lPLAPACK -lspooles -lspai -lblacs -lpord -lparmetis -lmetis
+PETSC_BLAS_LAPACK_DIR = --with-blas-lapack-dir=$(TACC_MKL_LIB)
+
+
+#PETSC_REAL_DIR = $(PETSC_DIR)/$(PETSC_REAL_ARCH)
+#SLEPC_REAL_DIR = $(SLEPC_DIR)/$(SLEPC_REAL_ARCH)
+#PETSC_CPLX_DIR = $(PETSC_DIR)/$(PETSC_CPLX_ARCH)
+#SLEPC_CPLX_DIR = $(SLEPC_DIR)/$(SLEPC_CPLX_ARCH)
+
+#PETSC_REAL_DIR = $(TACC_PETSC_DIR)/$(PETSC_REAL_ARCH)
+#SLEPC_REAL_DIR = $(TACC_SLEPC_DIR)/$(SLEPC_REAL_ARCH)
+#PETSC_CPLX_DIR = $(TACC_PETSC_DIR)/$(PETSC_CPLX_ARCH)
+#SLEPC_CPLX_DIR = $(TACC_SLEPC_DIR)/$(SLEPC_CPLX_ARCH)
+#PETSC_REAL_BUILD = $(TACC_PETSC_DIR)
+#PETSC_CPLX_BUILD = $(TACC_PETSC_DIR)
+#SLEPC_REAL_BUILD = $(TACC_SLEPC_DIR)
+#SLEPC_CPLX_BUILD = $(TACC_SLEPC_DIR)
+
+PETSC_REAL_DIR = $(PETSC_DIR)/$(PETSC_REAL_ARCH)
+SLEPC_REAL_DIR = $(TACC_SLEPC_DIR)/$(SLEPC_REAL_ARCH)
+PETSC_CPLX_DIR = $(PETSC_DIR)/$(PETSC_CPLX_ARCH)
+SLEPC_CPLX_DIR = $(TACC_SLEPC_DIR)/$(SLEPC_CPLX_ARCH)
+PETSC_REAL_BUILD = $(PETSC_DIR)
+PETSC_CPLX_BUILD = $(PETSC_DIR)
+SLEPC_REAL_BUILD = $(TACC_SLEPC_DIR)
+SLEPC_CPLX_BUILD = $(TACC_SLEPC_DIR)
+
+
+PETSC_REAL_INC = -I $(PETSC_REAL_BUILD)/include -I $(PETSC_REAL_BUILD)/$(PETSC_REAL_ARCH)/include
+PETSC_CPLX_INC = -I $(PETSC_CPLX_BUILD)/include -I $(PETSC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/include
+SLEPC_REAL_INC = -I $(SLEPC_REAL_BUILD)/include -I $(SLEPC_REAL_BUILD)/$(PETSC_REAL_ARCH)/include
+SLEPC_CPLX_INC = -I $(SLEPC_CPLX_BUILD)/include -I $(SLEPC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/include
+PETSC_REAL_LIBDIR = $(PETSC_REAL_BUILD)/$(PETSC_REAL_ARCH)/lib
+PETSC_CPLX_LIBDIR = $(PETSC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/lib
+SLEPC_REAL_LIBDIR = $(SLEPC_REAL_BUILD)/$(PETSC_REAL_ARCH)/lib
+SLEPC_CPLX_LIBDIR = $(SLEPC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/lib

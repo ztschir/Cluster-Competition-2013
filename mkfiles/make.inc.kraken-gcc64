@@ -1,0 +1,169 @@
+# must load {visit,fftw}, and module swap PrgEnv-pgi PrgEnv-gnu; also set XTPE_INFO_MESSAGE_OFF=1
+
+MPIHOME       = $(MPICH_DIR)
+INCMPI        = -I $(MPIHOME)/include/
+
+# Compilers
+CC            = cc -dynamic
+CXX           = CC -dynamic
+CXX_STATIC    = CC
+CPP           = cpp
+MPICC         = cc -dynamic
+MPICXX        = CC -dynamic
+GCC           = cc -dynamic  # gcc # for AMD library or so..
+F90           = ftn -dynamic
+MPIF90        = ftn -dynamic
+F77           = ftn -dynamic
+MPIF77        = ftn -dynamic
+LOADER        = $(MPICXX)
+
+# Compiler flags
+#O_LEVEL       = -O2 -fastsse -tp=barcelona-64 -pc=64
+O_LEVEL       = -O3
+CPPFLAGS      = $(O_LEVEL) -DMPICH_IGNORE_CXX_SEEK -DNO_MKL 
+CFLAGS        = $(O_LEVEL) -Wall -fPIC
+CXXFLAGS      = $(O_LEVEL) -Wall -fPIC
+LDFLAGS       =
+FCFLAGS       = $(O_LEVEL) -Wall -fPIC
+GCCFLAGS      = $(O_LEVEL) $(PICFLAG)
+F77FLAGS      = $(O_LEVEL) -Wall -fPIC
+F90_LIBS      = -lgfortran
+
+MPI_LIBS      = 
+BLAS          = -lacml -L/usr/lib64/libpthread.a
+LAPACK        =
+LINKS         = -L/usr/X11R6/lib64 -lX11 -lXext -lXdmcp -lXau -lz -ldl -pthread
+
+OPENMP	      = -fopenmp
+LIBSCI        = -L/opt/xt-libsci/10.5.02/gnu/lib -lsci
+
+ARPACK_DIR    = $(PROJECT_TOP)/libs/ARPACK/
+#ARPACK_DIR	= /sw/xt/arpack/2008.03.11/cnl2.2_gnu4.5.2/ARPACK/
+ARPACK_LIBS   = -lparpack -larpack
+
+#BOOST_INCLUDE = -I/sw/xt/boost/1.44.0/cnl2.2_gnu4.5.2/include
+#LINK_BOOST    = -Wl,-rpath,/sw/xt/boost/1.44.0/cnl2.2_gnu4.5.2/lib -L/sw/xt/boost/1.44.0/cnl2.2_gnu4.5.2/lib
+
+BOOST_INCLUDE = -I/sw/xt/boost/1.45.0/cnl3.1_gnu4.6.2/include
+LINK_BOOST    = -Wl,-rpath,/sw/xt/boost/1.45.0/cnl3.1_gnu4.6.2/lib -L/sw/xt/boost/1.45.0/cnl3.1_gnu4.6.2/lib
+
+LINKBOOSTTEST = $(LINK_BOOST) -lboost_unit_test_framework
+MPIEXECTEST   = 
+VTKINC_PATH = $(PROJECT_TOP)/libs/vtk/include/vtk-5.6
+VTKLIB_PATH = $(PROJECT_TOP)/libs/vtk/lib/vtk-5.6
+
+INCVTK     = -I $(VTKINC_PATH)
+
+#VTK_LIBS   = -Wl,-rpath,$(VTKLIB_PATH) -L$(VTKLIB_PATH) -lvtkFiltering -lvtkIO -lvtkCommon -lvtksys -lvtkDICOMParser -lvtkNetCDF -lvtkmetaio -lvtksqlite -lvtkpng -lvtkjpeg -lvtktiff -lvtkexpat -lvtkzlib -lvtkGraphics -lvtkImaging
+
+VTK_LIBS     = -Wl,--start-group -Wl,-rpath,$(VTKLIB_PATH) -L$(VTKLIB_PATH) -lvtkFiltering -lvtkIO -lvtkCommon -lvtksys -lvtkDICOMParser -lvtkImaging -lvtkGraphics -lvtkNetCDF -lvtkmetaio -lvtksqlite -lvtkpng -lvtkjpeg -lvtktiff -lvtkexpat -lvtkzlib -Wl,--end-group
+#VTK_LIBS   = -Wl,-rpath,$(VTKLIB_PATH) -L$(VTKLIB_PATH) -lvtkFiltering -lvtkIO -lvtkCommon -lvtksys -lvtkDICOMParser -lvtkImaging -lvtkGraphics -lvtkNetCDF -lvtkmetaio -lvtksqlite -lvtkpng -lvtkjpeg -lvtktiff -lvtkexpat -lvtkzlib
+
+
+#SILO_INC   = -I /sw/xt/silo/4.8/cnl3.1_gnu4.6.1/include
+SILO_INC  = -I $(PROJECT_TOP)/libs/silo/include
+
+#SILO_LIBS  = -Wl,-rpath,/sw/xt/silo/4.8/cnl3.1_gnu4.6.1/lib -L/sw/xt/silo/4.8/cnl3.1_gnu4.6.1/lib -lsiloh5 -Wl,-rpath,/opt/cray/hdf5/1.8.6/gnu/46/lib -L/opt/cray/hdf5/1.8.6/gnu/46/lib -lhdf5 -Wl,-rpath,/sw/xt/szip/2.1/sles11.1_gnu4.6.1/lib -L/sw/xt/szip/2.1/sles11.1_gnu4.6.1/lib -lsz
+
+SILO_LIBS = -Wl,-rpath,$(PROJECT_TOP)/libs/silo/lib -L$(PROJECT_TOP)/libs/silo/lib -lsiloh5  -Wl,-rpath,$(HDF5_DIR)/lib -L$(HDF5_DIR)/lib -lhdf5
+
+# check out silo's config.log for which hdf5 and sz to use
+
+#HDF5_DIR      = $/opt/cray/hdf5/1.8.6/gnu/46
+#HDF5_INCDIR   = $(HDF5_DIR)/include/
+#HDF5_LIBDIR   = $(HDF5_DIR)/lib
+#SZ_LIBDIR     = $(HDF5_DIR)/lib
+
+#PETSCDEV=-dev
+PETSCDEV=
+#PETSCDEV=-p8
+
+LIBMESH_DIR        = $(PROJECT_TOP)/libs/libmesh/libmesh
+LIBMESH_ARCH       = x86_64-unknown-linux-gnu_opt
+LIBMESH_TECIO_ARCH = x86_64-unknown-linux-gnu
+LIBMESH_CONTRIBS   = -lexodusii -lgmv -lgzstream -lnetcdf -lsfcurves -ltriangle -llaspack -lHilbert
+LIBMESH_VERSION = 0.7.2
+
+# PETSc / SLEPc
+PETSC_REAL_ARCH = linux
+PETSC_CPLX_ARCH = linux-complex
+SLEPC_REAL_ARCH = linux
+SLEPC_CPLX_ARCH = linux-complex
+ifeq ($(PETSCDEV),)
+	PETSC_LIBS            = -lpetscts -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsnes -lpetscsys
+	PETSC_EXT_LIBS_CPLX   = -lsuperlu_dist_2.5 -lzmumps -ldmumps -lmumps_common -lscalapack -lblacs -lpord -lparmetis -lmetis
+	PETSC_EXT_LIBS_REAL   = -lsuperlu_dist_2.5 -lzmumps -ldmumps -lmumps_common -lscalapack -lblacs -lpord -lparmetis -lmetis
+else
+ifeq ($(PETSCDEV),-p8)
+	PETSC_LIBS            = -lpetscts -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsnes -lpetscsys
+	PETSC_EXT_LIBS_CPLX   = -lsuperlu_dist_2.5 -lzmumps -ldmumps -lmumps_common -lscalapack -lblacs -lpord -lparmetis -lmetis
+	PETSC_EXT_LIBS_REAL   = -lsuperlu_dist_2.5 -lzmumps -ldmumps -lmumps_common -lscalapack -lblacs -lpord -lparmetis -lmetis
+else
+	PETSC_LIBS            = -lpetsc
+	PETSC_EXT_LIBS_CPLX   = -lsuperlu_dist_2.5 -lzmumps -ldmumps -lmumps_common -lscalapack -lblacs -lpord -lparmetis -lmetis
+	PETSC_EXT_LIBS_REAL   = -lzmumps -ldmumps -lmumps_common -lscalapack -lblacs -lpord -lparmetis -lmetis
+endif
+endif
+#from coates config file
+#PETSC_LIBS            = -lpetsc -lhdf5
+#PETSC_EXT_LIBS_CPLX   = -lsuperlu_dist -lzmumps -ldmumps -lmumps_common -lscalapack -lblacs -lpord -lparmetis -lmetis
+#PETSC_EXT_LIBS_REAL   = -lsuperlu_dist -lzmumps -ldmumps -lmumps_common -lscalapack -lblacs -lpord -lparmetis -lmetis
+
+
+PETSC_BLAS_LAPACK_DIR = --with-mpiexec=aprun
+PETSC_REAL_BUILD = $(PROJECT_TOP)/libs/petsc$(PETSCDEV)/build-real
+SLEPC_REAL_BUILD = $(PROJECT_TOP)/libs/slepc$(PETSCDEV)/build-real
+PETSC_REAL_INC = -I $(PETSC_REAL_BUILD)/include -I $(PETSC_REAL_BUILD)/$(PETSC_REAL_ARCH)/include
+SLEPC_REAL_INC = -I $(SLEPC_REAL_BUILD)/include -I $(SLEPC_REAL_BUILD)/$(PETSC_REAL_ARCH)/include
+PETSC_REAL_LIBDIR = $(PETSC_REAL_BUILD)/$(PETSC_REAL_ARCH)/lib
+SLEPC_REAL_LIBDIR = $(SLEPC_REAL_BUILD)/$(PETSC_REAL_ARCH)/lib
+PETSC_CPLX_BUILD = $(PROJECT_TOP)/libs/petsc$(PETSCDEV)/build-cplx
+SLEPC_CPLX_BUILD = $(PROJECT_TOP)/libs/slepc$(PETSCDEV)/build-cplx
+PETSC_CPLX_INC = -I $(PETSC_CPLX_BUILD)/include -I $(PETSC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/include
+SLEPC_CPLX_INC = -I $(SLEPC_CPLX_BUILD)/include -I $(SLEPC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/include
+PETSC_CPLX_LIBDIR = $(PETSC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/lib
+SLEPC_CPLX_LIBDIR = $(SLEPC_CPLX_BUILD)/$(PETSC_CPLX_ARCH)/lib
+#PETSC_CPLX_BUILD  = $(PETSC_REAL_BUILD)
+#SLEPC_CPLX_BUILD  = $(SLEPC_REAL_BUILD)
+#PETSC_CPLX_INC    = $(PETSC_REAL_INC)
+#SLEPC_CPLX_INC    = $(SLEPC_REAL_INC)
+#PETSC_CPLX_LIBDIR = $(PETSC_REAL_LIBDIR)
+#SLEPC_CPLX_LIBDIR = $(SLEPC_REAL_LIBDIR)
+#CPPFLAGS += -DNOCOMPLEX
+
+# PAPI - a library to monitor flops etc.
+#PAPI_PATH  = /opt/xt-tools/papi/default/
+PAPI_PATH = /opt/cray/papi/4.1.4/perfmon/2.82
+#PAPI_PATH = /opt/cray/modulefiles/papi/4.1.4
+PAPI_INC   = -I $(PAPI_PATH)/include 
+PAPI_LIB   = $(PROJECT_TOP)/libs/krp/krp-init.o $(PROJECT_TOP)/libs/krp/krp-rpt.o $(PROJECT_TOP)/libs/krp/krp-rpt-init.o -L$(PAPI_PATH)/lib64 -lpapi
+
+CPPFLAGS  += -DSILO -DUSE_PAPI
+
+# exclude libmesh and slepc for debugging purposes
+##CPPFLAGS += -DNOSLEPC -DNOLIBMESH
+##SLEPC_REAL_BUILD = 
+##SLEPC_REAL_INC = 
+##SLEPC_REAL_LIBDIR = 
+##SLEPC_CPLX_BUILD = 
+##SLEPC_CPLX_INC = 
+##SLEPC_CPLX_LIBDIR = 
+##LIBMESH_DIR        = 
+##LIBMESH_ARCH       = 
+##LIBMESH_TECIO_ARCH = 
+##LIBMESH_CONTRIBS   = 
+
+#Currently we need python compiled locally.
+PYTHON_ENABLE   = true
+#PYTHON          =
+#set by module load
+#PYTHONHOME=/sw/xt/python/2.7.1/cnl3.1_gnu4.6.2
+#PYTHON_INCLUDE   = -I$(PYTHONHOME)/include/python2.7
+#PYTHON_LIBS     = -Wl,-rpath,$(PYTHONHOME)/lib  -L$(PYTHONHOME)/lib -lpython2.7
+PYTHON_LIB     = -Wl,-rpath,$(PROJECT_TOP)/libs/python/build  -L$(PROJECT_TOP)/libs/python/build -lpython2.7 -lutil
+#PYTHON_LIBS     = -Wl,-rpath,$(PROJECT_TOP)/libs/python/build  -L$(PYTHONHOME)/lib -lpython2.7
+PYTHON         = $(PROJECT_TOP)/libs/python/build
+#PYTHON_INCLUDE = -I$(PYTHON_INC)/python2.7 -I$(PYTHON_INC)
+PYTHON_INCLUDE = -I$(PROJECT_TOP)/libs/python/build/Include/ 
+
+#PYTHON_LIBS     = -L$(PYTHON_LIB) -lpython2.7 -lutil
